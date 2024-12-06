@@ -23,3 +23,36 @@ SUIT_BITS = {
     'h': 0x4000,  # hearts   bit 14
     's': 0x8000,  # spades   bit 15
 }
+
+
+def make_card(rank: int, suit: int) -> int:
+    """
+    rank: 0..12 (2..A)
+    suit: 0=clubs, 1=diamonds, 2=hearts, 3=spades
+    """
+    suit_bit = 1 << (suit + 12)
+    rank_bit = 1 << (rank + 16)
+    return rank_bit | suit_bit | (rank << 8) | PRIMES[rank]
+
+
+def card_from_str(s: str) -> int:
+    """Parse e.g. 'As', 'Th', '2c', 'Kd'."""
+    s = s.strip()
+    rank = RANK_CHARS.index(s[0].upper())
+    suit = SUIT_CHARS.index(s[1].lower())
+    return make_card(rank, suit)
+
+
+def card_to_str(c: int) -> str:
+    rank = (c >> 8) & 0xF
+    suit_bits = (c >> 12) & 0xF
+    suit = suit_bits.bit_length() - 1  # 0..3
+    return RANK_CHARS[rank] + SUIT_CHARS[suit]
+
+
+def card_rank(c: int) -> int:
+    return (c >> 8) & 0xF
+
+
+def card_suit(c: int) -> int:
+    return ((c >> 12) & 0xF).bit_length() - 1
