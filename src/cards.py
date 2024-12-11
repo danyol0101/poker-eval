@@ -56,3 +56,7 @@ def card_rank(c: int) -> int:
 
 def card_suit(c: int) -> int:
     return ((c >> 12) & 0xF).bit_length() - 1
+
+
+# Build full 52-card deck as a list of ints
+DECK: list[int] = [make_card(r, s) for r in range(13) for s in range(4)]
