@@ -12,6 +12,8 @@ Two separate lookup paths:
   2. UNIQUE5 table: key = prime product            → hand rank  (straights + high cards)
   3. Non-unique non-flush: key = prime product mod big prime → hand rank
 
+The 7-card evaluator tries all C(7,5)=21 five-card combinations and returns the best.
+
 Hand category boundaries (lower = better):
   Royal Flush:      1
   Straight Flushes: 2 – 10
@@ -194,3 +196,20 @@ def evaluate5(cards: list[int]) -> int:
     if prod in UNIQUE5_TABLE:
         return UNIQUE5_TABLE[prod]
     return MULTIPLES_TABLE[prod]
+
+
+# Precomputed C(7,5)=21 index combinations for 7-card evaluation
+_7C5 = list(combinations(range(7), 5))
+
+
+def evaluate7(cards: list[int]) -> int:
+    """
+    Best 5-card hand rank out of 7 cards. Lower = better.
+    """
+    best = 9999
+    for idx in _7C5:
+        hand = [cards[i] for i in idx]
+        r = evaluate5(hand)
+        if r < best:
+            best = r
+    return best
