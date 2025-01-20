@@ -100,6 +100,62 @@ def equity(
     }
 
 
+def equity_exact(
+    hole_cards: list[list[int]],
+    board: list[int] = None,
+) -> dict:
+    """
+    Exact equity by enumerating all possible runouts.
+    Only feasible when few cards remain (e.g. turn+river = C(45,2)=990 combos).
+    Raises ValueError if too many runouts (> 1M).
+    """
+    from itertools import combinations as _comb
+
+    if board is None:
+        board = []
+
+    n_to_deal = 5 - len(board)
+    known = [c for pair in hole_cards for c in pair] + board
+    live_deck = _remove_known(known)
+
+    runouts = list(_comb(live_deck, n_to_deal))
+    if len(runouts) > 1_000_000:
+        raise ValueError(f"Too many runouts ({len(runouts):,}); use Monte Carlo instead.")
+
+    n_players = len(hole_cards)
+    wins = [0] * n_players
+    ties = [0] * n_players
+
+    t0 = time.perf_counter()
+
+    for runout in runouts:
+        full_board = board + list(runout)
+        ranks = [evaluate7(pair + full_board) for pair in hole_cards]
+        best = min(ranks)
+        winners = [i for i, r in enumerate(ranks) if r == best]
+        if len(winners) == 1:
+            wins[winners[0]] += 1
+        else:
+            for w in winners:
+                ties[w] += 1
+
+    n_trials = len(runouts)
+    elapsed_ms = (time.perf_counter() - t0) * 1000
+    equity_vals = [
+        (wins[i] + ties[i] / n_players) / n_trials
+        for i in range(n_players)
+    ]
+
+    return {
+        'wins':       wins,
+        'ties':       ties,
+        'equity':     equity_vals,
+        'trials':     n_trials,
+        'elapsed_ms': elapsed_ms,
+        'exact':      True,
+    }
+
+
 def parse_hand(s: str) -> list[int]:
     """Parse '  AsKh ' -> [card_int, card_int]."""
     tokens = s.strip().split()
