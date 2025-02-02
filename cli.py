@@ -27,6 +27,7 @@ from src import (
     card_from_str, card_to_str, evaluate7, hand_category,
     equity, equity_exact, parse_hand, parse_board
 )
+from src.fast_eval import equity_fast
 from src.lookup import MAX_STRAIGHT_FLUSH, MAX_FOUR_OF_A_KIND, MAX_FULL_HOUSE
 
 
@@ -129,7 +130,7 @@ def main():
             result = equity_exact(hole_cards, board)
         else:
             seed = args.seed if args.seed is not None else 42
-            result = equity(hole_cards, board, n_trials=args.trials, seed=seed)
+            result = equity_fast(hole_cards, board, n_trials=args.trials, seed=seed)
     except ValueError as e:
         print(f"  {e}", file=sys.stderr)
         sys.exit(1)
