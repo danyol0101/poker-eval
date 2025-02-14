@@ -60,3 +60,30 @@ def card_suit(c: int) -> int:
 
 # Build full 52-card deck as a list of ints
 DECK: list[int] = [make_card(r, s) for r in range(13) for s in range(4)]
+
+_SUIT_SYMBOLS = ['♣', '♦', '♥', '♠']  # indexed by suit 0-3 (cdhs)
+_RED  = '\033[91m'
+_RESET = '\033[0m'
+
+
+def _card_lines(c: int, ansi: bool = True) -> list[str]:
+    rank = RANK_CHARS[(c >> 8) & 0xF]
+    suit = ((c >> 12) & 0xF).bit_length() - 1
+    sym = _SUIT_SYMBOLS[suit]
+    col = _RED if ansi and suit in (1, 2) else ''  # diamonds, hearts
+    rst = _RESET if col else ''
+    return [
+        '┌──────┐',
+        f'│{col}{rank}{rst}     │',
+        f'│  {col}{sym}{rst}   │',
+        f'│     {col}{rank}{rst}│',
+        '└──────┘',
+    ]
+
+
+def render_cards(cards: list[int], ansi: bool = True) -> str:
+    """Render a list of cards as side-by-side ASCII art."""
+    if not cards:
+        return ''
+    lines = [_card_lines(c, ansi) for c in cards]
+    return '\n'.join('  '.join(row[i] for row in lines) for i in range(5))

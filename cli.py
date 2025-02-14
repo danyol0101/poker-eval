@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from src import (
     card_from_str, card_to_str, evaluate7, hand_category,
-    equity, equity_exact, parse_hand, parse_board
+    equity, equity_exact, parse_hand, parse_board, render_cards
 )
 from src.fast_eval import equity_fast
 from src.lookup import MAX_STRAIGHT_FLUSH, MAX_FOUR_OF_A_KIND, MAX_FULL_HOUSE
@@ -92,21 +92,25 @@ def main():
     print()
 
     labels = [f"Player {i+1}" for i in range(n_players)]
-    for i, (label, cards) in enumerate(zip(labels, hole_cards)):
-        hand_str = " ".join(card_to_str(c) for c in cards)
+    for label, cards in zip(labels, hole_cards):
+        print(f"  {color(label, '1;37')}", end="")
         if n_board == 5:
             r = evaluate7(cards + board)
             cat = hand_category(r)
-            print(f"  {label}: {color(hand_str, '1;37')}  →  {color(cat, '33')}  (rank {r})")
+            print(f"  →  {color(cat, '33')}  (rank {r})")
         else:
-            print(f"  {label}: {color(hand_str, '1;37')}")
+            print()
+        for line in render_cards(cards).splitlines():
+            print(f"  {line}")
+        print()
 
     if board:
-        board_str = " ".join(card_to_str(c) for c in board)
         stage = {0: "Preflop", 3: "Flop", 4: "Turn", 5: "River"}[n_board]
-        print(f"\n  Board ({stage}): {color(board_str, '1;34')}")
+        print(f"  {color(f'Board ({stage})', '1;34')}")
+        for line in render_cards(board).splitlines():
+            print(f"  {line}")
     else:
-        print(f"\n  Board: (preflop)")
+        print(f"  {color('Board: (preflop)', '1;34')}")
 
     print()
 
